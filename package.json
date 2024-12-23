@@ -1,0 +1,17 @@
+{
+  "name": "schholappbackend",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "node-appwrite": "^14.1.0",
+    "some-library": "^1.0.0",
+    "twilio": "^5.4.0"
+  }
+}
