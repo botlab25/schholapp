@@ -19,10 +19,14 @@ export default async ({ req, res, log, error }) => {
 
   try {
     // Log incoming request
-    log("Parsed action:", JSON.parse(req.payload || "{}").action);
 
     // Parse request payload
-    const { action, phone, code } = JSON.parse(req.payload || "{}");
+    const payload = req.payload ? JSON.parse(req.payload) : {};
+    const { action, phone, code } = payload;
+    log("Parsed action:", payload);
+    log("Raw payload:", req.payload);
+    log("Parsed payload:", payload);
+    log("Extracted action:", action);
 
     if (action === "send") {
       // Generate a random 4-digit code
