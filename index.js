@@ -23,8 +23,11 @@ export default async ({ req, res, log, error }) => {
     .setKey("[YOUR_APPWRITE_API_KEY]"); // Replace with your Appwrite API Key
 
   // Initialize Twilio client
-  const twilioClient = twilio("[TWILIO_ACCOUNT_SID]", "[TWILIO_AUTH_TOKEN]");
-  const twilioNumber = "[TWILIO_PHONE_NUMBER]"; // Replace with your Twilio phone number
+  const twilioClient = twilio(
+    "AC1dae4c12842289f635f488f533070d33",
+    "1fe4533c39a88df6d91b1394d8ecdf5d"
+  );
+  const twilioNumber = "+12186585527"; // Replace with your Twilio phone number
 
   const codes = {}; // Store verification codes temporarily
 
