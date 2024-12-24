@@ -58,7 +58,6 @@ export default async ({ req, res, log, error }) => {
         to: phone,
       });
 
-      log("Message SID:", message.sid);
       return res.json({ success: true, message: "Code sent successfully!" });
     } else if (action === "verify") {
       // Verify the code
@@ -79,7 +78,7 @@ export default async ({ req, res, log, error }) => {
       return res.json({ success: false, message: "Invalid action provided." });
     }
   } catch (err) {
-    error("Error processing request:", err.message);
+    error("Error processing request:", err);
     return res.json({ success: false, message: `Error: ${err.message}` });
   }
 };
