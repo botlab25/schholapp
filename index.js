@@ -11,6 +11,15 @@ module.exports = async function (req, res) {
   const twilioClient = twilio(accountSid, authToken);
 
   try {
+    console.log("Payload received:", req.payload); // Log the payload
+
+    if (!req.payload) {
+      return res.json({
+        success: false,
+        message: "No payload received.",
+      });
+    }
+
     const { phone, code, action } = JSON.parse(req.payload);
 
     if (action === "send") {
