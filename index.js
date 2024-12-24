@@ -12,14 +12,14 @@ export default async ({ req, res, log, error }) => {
     .setKey(process.env.APPWRITE_FUNCTION_API_KEY); // Appwrite API key
 
   // Twilio credentials
-  const accountSid = process.env.TWILIO_ACCOUNT_SID; // Twilio Account SID
-  const authToken = process.env.TWILIO_AUTH_TOKEN; // Twilio Auth Token
+  const accountSid = "AC1dae4c12842289f635f488f533070d33"; // Twilio Account SID
+  const authToken = "1fe4533c39a88df6d91b1394d8ecdf5d"; // Twilio Auth Token
   const twilioClient = twilio(accountSid, authToken);
-  const twilioNumber = process.env.TWILIO_PHONE_NUMBER; // Twilio Phone Number
+  const twilioNumber = "+12186585527"; // Twilio Phone Number
 
   try {
     // Log incoming request
-    log("Received request:", req);
+    log("Received requestt:", req);
 
     // Parse request payload
     const { action, phone, code } = JSON.parse(req.payload || "{}");
