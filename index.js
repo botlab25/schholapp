@@ -58,6 +58,7 @@ export default async ({ req, res, log, error }) => {
         to: phone,
       });
 
+      log("Message SID:", message.sid);
       return res.json({ success: true, message: "Code sent successfully!" });
     } else if (action === "verify") {
       // Verify the code
