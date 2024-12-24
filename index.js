@@ -4,7 +4,7 @@ const twilio = require("twilio");
 // Store codes in memory (for simicity; consider using a database for production)
 const codes = {};
 
-module.exports = async function (req, res) {
+module.exports = async function (req, res, context) {
   const client = new sdk.Client();
   const accountSid = "AC1dae4c12842289f635f488f533070d33";
   const authToken = "1fe4533c39a88df6d91b1394d8ecdf5d";
@@ -14,13 +14,24 @@ module.exports = async function (req, res) {
     console.log("Payload received:", req.payload); // Log the payload
 
     if (!req.payload) {
+      context.error("No payload received.");
       return res.json({
         success: false,
         message: "No payload received.",
       });
     }
 
-    const { phone, code, action } = JSON.parse(req.payload);
+    let payload;
+    try {
+      payload = JSON.parse(req.payload);
+    } catch (error) {
+      context.error("Invalid JSON payload:", error.message);
+      return res.json({
+        success: false,
+        message: "Invalid JSON payload.",
+      });
+    }
+    const { phone, code, action } = payload;
 
     if (action === "send") {
       // Generate a random 4-digit code
