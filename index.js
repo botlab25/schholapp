@@ -19,7 +19,7 @@ export default async ({ req, res, log, error }) => {
 
   try {
     // Log incoming request
-    log("Received requestt:", req);
+    log("Parsed action:", JSON.parse(req.payload || "{}").action);
 
     // Parse request payload
     const { action, phone, code } = JSON.parse(req.payload || "{}");
