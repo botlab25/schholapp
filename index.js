@@ -52,12 +52,13 @@ export default async ({ req, res, log, error }) => {
       log(`Generated code ${generatedCode} for phone ${phone}`);
 
       // Send the code via Twilio
-      await twilioClient.messages.create({
+      const message = await twilioClient.messages.create({
         body: `Your verification code is: ${generatedCode}`,
         from: twilioNumber,
         to: phone,
       });
 
+      log(`Message sent: ${message.sid}`);
       return res.json({ success: true, message: "Code sent successfully!" });
     } else if (action === "verify") {
       // Verify the code
