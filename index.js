@@ -1,7 +1,7 @@
 const sdk = require("node-appwrite");
 const twilio = require("twilio");
 
-// Store codes in memory (for simplicity; consider using a database for production)
+// Store codes in memory (for simicity; consider using a database for production)
 const codes = {};
 
 const TWILIO_ACCOUNT_SID = process.env.TWILIO_ACCOUNT_SID;
