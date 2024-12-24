@@ -22,11 +22,10 @@ export default async ({ req, res, log, error }) => {
     .setProject("[YOUR_PROJECT_ID]") // Replace with your Appwrite project ID
     .setKey("[YOUR_APPWRITE_API_KEY]"); // Replace with your Appwrite API Key
 
-  // Initialize Twilio client
-  const twilioClient = twilio(
-    "AC1dae4c12842289f635f488f533070d33",
-    "1fe4533c39a88df6d91b1394d8ecdf5d"
-  );
+  // Initialize Twilio client with SID and Auth Token
+  const accountSid = "AC1dae4c12842289f635f488f533070d33"; // Replace with your Twilio Account SID
+  const authToken = "1fe4533c39a88df6d91b1394d8ecdf5d"; // Replace with your Twilio Auth Token
+  const twilioClient = twilio(accountSid, authToken);
   const twilioNumber = "+12186585527"; // Replace with your Twilio phone number
 
   const codes = {}; // Store verification codes temporarily
