@@ -1,63 +1,62 @@
-const sdk = require("node-appwrite");
-const twilio = require("twilio");
+import { Client, Databases } from "node-appwrite";
+import twilio from "twilio";
 
-// Store codes in memory (for simicity; consider using a database for production)
+// In-memory storage for simplicity; consider using a database for production
 const codes = {};
 
-module.exports = async function (req, res, context) {
-  const client = new sdk.Client();
-  const accountSid = "AC1dae4c12842289f635f488f533070d33";
-  const authToken = "1fe4533c39a88df6d91b1394d8ecdf5d";
+export default async ({ req, res, log, error }) => {
+  // Initialize Appwrite client
+  const client = new Client()
+    .setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT) // Appwrite API endpoint
+    .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID) // Appwrite project ID
+    .setKey(process.env.APPWRITE_FUNCTION_API_KEY); // Appwrite API key
+
+  // Twilio credentials
+  const accountSid = process.env.TWILIO_ACCOUNT_SID; // Twilio Account SID
+  const authToken = process.env.TWILIO_AUTH_TOKEN; // Twilio Auth Token
   const twilioClient = twilio(accountSid, authToken);
+  const twilioNumber = process.env.TWILIO_PHONE_NUMBER; // Twilio Phone Number
 
   try {
-    console.log("Payload received:", req.payload); // Log the payload
+    // Log incoming request
+    log("Received request:", req);
 
-    if (!req.payload) {
-      context.error("No payload received.");
-      return res.json({
-        success: false,
-        message: "No payload received.",
-      });
-    }
-
-    let payload;
-    try {
-      payload = JSON.parse(req.payload);
-    } catch (error) {
-      context.error("Invalid JSON payload:", error.message);
-      return res.json({
-        success: false,
-        message: "Invalid JSON payload.",
-      });
-    }
-    const { phone, code, action } = payload;
+    // Parse request payload
+    const { action, phone, code } = JSON.parse(req.payload || "{}");
 
     if (action === "send") {
       // Generate a random 4-digit code
       const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
       codes[phone] = randomCode;
 
-      // Send SMS using Twilio
+      // Send SMS via Twilio
       await twilioClient.messages.create({
         body: `Your verification code is: ${randomCode}`,
-        from: "+12186585527",
+        from: twilioNumber,
         to: phone,
       });
 
-      res.json({ success: true, message: "Code sent successfully!" });
+      return res.json({ success: true, message: "Code sent successfully!" });
     } else if (action === "verify") {
-      // Validate the provided code
+      // Check if code matches
       if (codes[phone] === code) {
-        delete codes[phone]; // Clear the code after successful verification
-        res.json({ success: true, message: "Code verified!" });
+        delete codes[phone]; // Clear code after successful verification
+        return res.json({
+          success: true,
+          message: "Code verified successfully!",
+        });
       } else {
-        res.json({ success: false, message: "Invalid code." });
+        return res.json({ success: false, message: "Invalid code." });
       }
     } else {
-      res.json({ success: false, message: "Invalid action." });
+      return res.json({ success: false, message: "Invalid action." });
     }
-  } catch (error) {
-    res.json({ success: false, message: error.message });
+  } catch (err) {
+    // Log and handle any errors
+    error("An error occurred:", err.message);
+    return res.json({
+      success: false,
+      message: `An error occurred: ${err.message}`,
+    });
   }
 };
