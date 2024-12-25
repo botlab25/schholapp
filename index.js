@@ -1,5 +1,10 @@
 import { Client } from "node-appwrite";
-import twilio from "twilio";
+import { initializeApp } from "firebase/app";
+import {
+  getAuth,
+  signInWithPhoneNumber,
+  RecaptchaVerifier,
+} from "firebase/auth";
 
 export default async ({ req, res, log, error }) => {
   // Log request details for debugging
@@ -22,12 +27,19 @@ export default async ({ req, res, log, error }) => {
     .setProject("[YOUR_PROJECT_ID]") // Replace with your Appwrite project ID
     .setKey("[YOUR_APPWRITE_API_KEY]"); // Replace with your Appwrite API Key
 
-  // Initialize Twilio client with SID and Auth Token
-  const accountSid = "AC1dae4c12842289f635f488f533070d33"; // Replace with your Twilio Account SID
-  const authToken = "1fe4533c39a88df6d91b1394d8ecdf5d"; // Replace with your Twilio Auth Token
-  const twilioClient = twilio(accountSid, authToken);
-  const twilioNumber = "+12186585527"; // Replace with your Twilio phone number
+  // Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "[YOUR_FIREBASE_API_KEY]",
+    authDomain: "[YOUR_FIREBASE_AUTH_DOMAIN]",
+    projectId: "[YOUR_FIREBASE_PROJECT_ID]",
+    storageBucket: "[YOUR_FIREBASE_STORAGE_BUCKET]",
+    messagingSenderId: "[YOUR_FIREBASE_MESSAGING_SENDER_ID]",
+    appId: "[YOUR_FIREBASE_APP_ID]",
+  };
 
+  // Initialize Firebase
+  const firebaseApp = initializeApp(firebaseConfig);
+  const auth = getAuth(firebaseApp);
   const codes = {}; // Store verification codes temporarily
 
   try {
@@ -46,29 +58,43 @@ export default async ({ req, res, log, error }) => {
     }
 
     if (action === "send") {
-      // Generate a verification code and store it
-      const generatedCode = Math.floor(1000 + Math.random() * 9000).toString();
-      codes[phone] = generatedCode;
-      log(`Generated code ${generatedCode} for phone ${phone}`);
+      // Set up Firebase Phone Authentication (reCAPTCHA is required)
+      const appVerifier = new RecaptchaVerifier(
+        "recaptcha-container",
+        {
+          size: "invisible",
+        },
+        auth
+      );
 
-      // Send the code via Twilio
-      const message = await twilioClient.messages.create({
-        body: `Your verification code is: ${generatedCode}`,
-        from: twilioNumber,
-        to: phone,
-      });
-
-      log(`Message sent: ${message.sid}`);
+      const confirmationResult = await signInWithPhoneNumber(
+        auth,
+        phone,
+        appVerifier
+      );
+      log(`Confirmation result received for phone ${phone}`);
+      codes[phone] = confirmationResult; // Store confirmation result
       return res.json({ success: true, message: "Code sent successfully!" });
     } else if (action === "verify") {
       // Verify the code
-      if (codes[phone] === code) {
-        delete codes[phone]; // Remove the code after successful verification
+      const confirmationResult = codes[phone];
+      if (!confirmationResult) {
+        return res.json({
+          success: false,
+          message: "No OTP sent to this phone number.",
+        });
+      }
+
+      try {
+        const userCredential = await confirmationResult.confirm(code);
+        delete codes[phone]; // Clear the confirmation result after verification
         return res.json({
           success: true,
           message: "Code verified successfully!",
+          user: userCredential.user,
         });
-      } else {
+      } catch (verificationError) {
+        log("OTP verification error:", verificationError);
         return res.json({
           success: false,
           message: "Invalid verification code.",
