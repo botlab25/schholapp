@@ -29,12 +29,13 @@ export default async ({ req, res, log, error }) => {
 
   // Firebase Configuration
   const firebaseConfig = {
-    apiKey: "[YOUR_FIREBASE_API_KEY]",
-    authDomain: "[YOUR_FIREBASE_AUTH_DOMAIN]",
-    projectId: "[YOUR_FIREBASE_PROJECT_ID]",
-    storageBucket: "[YOUR_FIREBASE_STORAGE_BUCKET]",
-    messagingSenderId: "[YOUR_FIREBASE_MESSAGING_SENDER_ID]",
-    appId: "[YOUR_FIREBASE_APP_ID]",
+    apiKey: "AIzaSyAuvwUp9DrBnjmawT19Xaq2ObieeTLsaJo",
+    authDomain: "schholapp.firebaseapp.com",
+    projectId: "schholapp",
+    storageBucket: "schholapp.firebasestorage.app",
+    messagingSenderId: "76933089737",
+    appId: "1:76933089737:web:dec958d7b3cf5bd561c018",
+    measurementId: "G-34VWSPB7B4",
   };
 
   // Initialize Firebase
