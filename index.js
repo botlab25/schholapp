@@ -20,13 +20,12 @@ export default async ({ req, res, log, error }) => {
     // Extract numbers from the payload
     const { phoneNmber, otp } = payload;
 
-    log("jjjjjjjjjjjjjkkkk", phoneNmber, otp);
+    log("jjjjjjjjjjjjjkkkk", phoneNmber, otp, process.env.APPWRITE_API_KEY);
 
     // Return the result
     return res.json({
       success: true,
       message: "Numbers added successfully!",
-      result: result,
     });
   } catch (err) {
     error("Error processing request:", err);
