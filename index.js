@@ -1,112 +1,25 @@
-import { Client } from "node-appwrite";
-import { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  signInWithPhoneNumber,
-  RecaptchaVerifier,
-} from "firebase/auth";
+require("dotenv").config();
 
-export default async ({ req, res, log, error }) => {
-  // Log request details for debugging
-  log(req.bodyText); // Raw request body, contains request data
-  log(JSON.stringify(req.bodyJson)); // Object from parsed JSON request body, otherwise string
-  log(JSON.stringify(req.headers)); // String key-value pairs of all request headers, keys are lowercase
-  log(req.scheme); // Value of the x-forwarded-proto header, usually http or https
-  log(req.method); // Request method, such as GET, POST, PUT, DELETE, PATCH, etc.
-  log(req.url); // Full URL, for example: http://awesome.appwrite.io:8000/v1/hooks?limit=12&offset=50
-  log(req.host); // Hostname from the host header, such as awesome.appwrite.io
-  log(req.port); // Port from the host header, for example 8000
-  log(req.path); // Path part of URL, for example /v1/hooks
-  log(req.queryString); // Raw query params string. For example "limit=12&offset=50"
-  log(JSON.stringify(req.query)); // Parsed query params. For example, req.query.limit
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKIN;
 
-  // Initialize Appwrite client
-  const client = new Client();
-  client
-    .setEndpoint("https://[YOUR_APPWRITE_ENDPOINT]") // Replace with your Appwrite endpoint
-    .setProject("[YOUR_PROJECT_ID]") // Replace with your Appwrite project ID
-    .setKey("[YOUR_APPWRITE_API_KEY]"); // Replace with your Appwrite API Key
+console.log("auth", accountSid);
 
-  // Firebase Configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyAuvwUp9DrBnjmawT19Xaq2ObieeTLsaJo",
-    authDomain: "schholapp.firebaseapp.com",
-    projectId: "schholapp",
-    storageBucket: "schholapp.firebasestorage.app",
-    messagingSenderId: "76933089737",
-    appId: "1:76933089737:web:dec958d7b3cf5bd561c018",
-    measurementId: "G-34VWSPB7B4",
+const client = require("twilio")(accountSid, authToken);
+
+const sendSMS = async (body) => {
+  let msgOption = {
+    from: +12186585527,
+    to: +2349091086733,
+    body,
   };
 
-  // Initialize Firebase
-  const firebaseApp = initializeApp(firebaseConfig);
-  const auth = getAuth(firebaseApp);
-  const codes = {}; // Store verification codes temporarily
-
   try {
-    // Parse the request payload
-    const payload = req.bodyJson || {};
-    log("Parsed payload:", payload);
-
-    const { action, phone, code } = payload;
-    log("Extracted action:", action);
-
-    if (!action) {
-      return res.json({
-        success: false,
-        message: "Invalid or missing action in payload.",
-      });
-    }
-
-    if (action === "send") {
-      // Set up Firebase Phone Authentication (reCAPTCHA is required)
-      const appVerifier = new RecaptchaVerifier(
-        "recaptcha-container",
-        {
-          size: "invisible",
-        },
-        auth
-      );
-
-      const confirmationResult = await signInWithPhoneNumber(
-        auth,
-        phone,
-        appVerifier
-      );
-      log(`Confirmation result received for phone ${phone}`);
-      codes[phone] = confirmationResult; // Store confirmation result
-      return res.json({ success: true, message: "Code sent successfully!" });
-    } else if (action === "verify") {
-      // Verify the code
-      const confirmationResult = codes[phone];
-      if (!confirmationResult) {
-        return res.json({
-          success: false,
-          message: "No OTP sent to this phone number.",
-        });
-      }
-
-      try {
-        const userCredential = await confirmationResult.confirm(code);
-        delete codes[phone]; // Clear the confirmation result after verification
-        return res.json({
-          success: true,
-          message: "Code verified successfully!",
-          user: userCredential.user,
-        });
-      } catch (verificationError) {
-        log("OTP verification error:", verificationError);
-        return res.json({
-          success: false,
-          message: "Invalid verification code.",
-        });
-      }
-    } else {
-      log("Invalid action:", action);
-      return res.json({ success: false, message: "Invalid action provided." });
-    }
-  } catch (err) {
-    error("Error processing request:", err);
-    return res.json({ success: false, message: `Error: ${err.message}` });
+    const message = await client.messages.create(msgOption);
+    console.log("yeee", message);
+  } catch (error) {
+    console.log("errrrrr", error);
   }
 };
+
+sendSMS("Hello Your code is  ....");
