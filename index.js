@@ -1,52 +1,38 @@
-require("dotenv").config();
-const { Client, Databases } = require("node-appwrite");
-const twilio = require("twilio");
+export default async ({ req, res, log, error }) => {
+  // Log request details for debugging
+  log(req.bodyText); // Raw request body, contains request data
+  log(JSON.stringify(req.bodyJson)); // Object from parsed JSON request body, otherwise string
+  log(JSON.stringify(req.headers)); // String key-value pairs of all request headers, keys are lowercase
+  log(req.scheme); // Value of the x-forwarded-proto header, usually http or https
+  log(req.method); // Request method, such as GET, POST, PUT, DELETE, PATCH, etc.
+  log(req.url); // Full URL, for example: http://awesome.appwrite.io:8000/v1/hooks?limit=12&offset=50
+  log(req.host); // Hostname from the host header, such as awesome.appwrite.io
+  log(req.port); // Port from the host header, for example 8000
+  log(req.path); // Path part of URL, for example /v1/hooks
+  log(req.queryString); // Raw query params string. For example "limit=12&offset=50"
+  log(JSON.stringify(req.query)); // Parsed query params. For example, req.query.limit
 
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const twilioClient = twilio(accountSid, authToken);
-
-const appwriteClient = new Client()
-  .setEndpoint(process.env.APPWRITE_ENDPOINT) // Your Appwrite Endpoint
-  .setProject(process.env.APPWRITE_PROJECT_ID) // Your Appwrite Project ID
-  .setKey(process.env.APPWRITE_API_KEY); // Your Appwrite API Key
-
-module.exports = async function (req, res) {
   try {
-    const eventData = JSON.parse(process.env.APPWRITE_FUNCTION_DATA || "{}");
-    const { phoneNumber, otp } = eventData;
+    // Parse the request payload
+    const payload = req.bodyJson || {};
+    log("Parsed payload:", payload);
 
-    if (!phoneNumber || !otp) {
-      console.error("Phone number or OTP missing");
-      res.writeHead(400, { "Content-Type": "application/json" });
-      return res.end(
-        JSON.stringify({ error: "Phone number and OTP are required" })
-      );
-    }
+    // Extract numbers from the payload
+    const { phoneNmber, otp } = payload;
 
-    // Send OTP using Twilio
-    try {
-      const message = await twilioClient.messages.create({
-        from: process.env.TWILIO_PHONE_NUMBER,
-        to: phoneNumber,
-        body: `Your OTP code is ${otp}`,
-      });
-      console.log("OTP sent:", message.sid);
+    log("jjjjjjjjjjjjjkkkk", phoneNmber, otp);
 
-      res.writeHead(200, { "Content-Type": "application/json" });
-      return res.end(
-        JSON.stringify({ success: true, message: "OTP sent successfully" })
-      );
-    } catch (error) {
-      console.error("Twilio error:", error);
-      res.writeHead(500, { "Content-Type": "application/json" });
-      return res.end(
-        JSON.stringify({ success: false, error: "Failed to send OTP" })
-      );
-    }
-  } catch (error) {
-    console.error("Function error:", error);
-    res.writeHead(500, { "Content-Type": "application/json" });
-    return res.end(JSON.stringify({ error: "Internal server error" }));
+    // Return the result
+    return res.json({
+      success: true,
+      message: "Numbers added successfully!",
+      result: result,
+    });
+  } catch (err) {
+    error("Error processing request:", err);
+    return res.json({
+      success: false,
+      message: `Error: ${err.message}`,
+    });
   }
 };
